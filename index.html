@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Planet Adventure</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Orbitron',sans-serif;
+}
+
+body{
+    overflow:hidden;
+    height:100vh;
+    background:linear-gradient(135deg,#050816,#0b0f2a,#111c44);
+    color:white;
+}
+
+/* STARS */
+
+.stars{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:url('https://i.imgur.com/YKY28eT.png');
+    animation:moveStars 100s linear infinite;
+    opacity:0.7;
+}
+
+@keyframes moveStars{
+    from{background-position:0 0;}
+    to{background-position:-10000px 5000px;}
+}
+
+/* PLANET */
+
+.planet{
+    position:absolute;
+    width:250px;
+    height:250px;
+    border-radius:50%;
+    top:10%;
+    right:10%;
+    animation:floatPlanet 6s ease-in-out infinite;
+    transition:1s;
+    background:radial-gradient(circle at 30% 30%,#4facfe,#00f2fe,#001f4d);
+    box-shadow:0 0 60px cyan;
+}
+
+@keyframes floatPlanet{
+    0%{transform:translateY(0px);}
+    50%{transform:translateY(20px);}
+    100%{transform:translateY(0px);}
+}
+
+/* PARTICLE */
+
+.particle{
+    position:absolute;
+    width:4px;
+    height:4px;
+    background:white;
+    border-radius:50%;
+    opacity:0.8;
+    animation:particleMove linear infinite;
+}
+
+@keyframes particleMove{
+    from{
+        transform:translateY(100vh);
+    }
+    to{
+        transform:translateY(-100px);
+    }
+}
+
+/* CONTAINER */
+
+.container{
+    position:relative;
+    z-index:10;
+    width:100%;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.card{
+    width:90%;
+    max-width:700px;
+    padding:40px;
+    border-radius:25px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.2);
+    box-shadow:0 0 30px rgba(0,255,255,0.3);
+    text-align:center;
+}
+
+/* TITLE */
+
+.title{
+    font-size:42px;
+    margin-bottom:10px;
+    color:#00f2fe;
+    text-shadow:0 0 20px cyan;
+}
+
+.subtitle{
+    font-size:14px;
+    opacity:0.8;
+    margin-bottom:30px;
+}
+
+/* BUTTON */
+
+.btn{
+    display:block;
+    width:100%;
+    padding:15px;
+    margin:15px 0;
+    border:none;
+    border-radius:15px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    color:white;
+    background:linear-gradient(90deg,#00c6ff,#0072ff);
+    box-shadow:0 0 20px rgba(0,255,255,0.5);
+    transition:0.3s;
+}
+
+.btn:hover{
+    transform:scale(1.05);
+    box-shadow:0 0 40px cyan;
+}
+
+/* QUIZ */
+
+.question{
+    font-size:22px;
+    margin-bottom:20px;
+}
+
+.answer-btn{
+    width:100%;
+    margin:10px 0;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#1d2b64;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+    font-size:16px;
+}
+
+.answer-btn:hover{
+    background:#00c6ff;
+}
+
+/* LEVEL */
+
+.level-info{
+    margin-bottom:15px;
+    font-size:18px;
+    color:#00f2fe;
+}
+
+/* TIMER */
+
+.timer-box{
+    margin-bottom:20px;
+}
+
+.timer{
+    font-size:22px;
+    color:#00f2fe;
+    text-shadow:0 0 15px cyan;
+}
+
+/* SCORE */
+
+.score{
+    margin-top:20px;
+    font-size:18px;
+    color:#00f2fe;
+}
+
+/* SETTINGS */
+
+.settings-box{
+    margin-top:20px;
+    text-align:left;
+    background:rgba(255,255,255,0.05);
+    padding:20px;
+    border-radius:15px;
+}
+
+.setting-item{
+    margin:15px 0;
+}
+
+input[type=range]{
+    width:100%;
+}
+
+/* EFFECT */
+
+.correct-effect{
+    animation:correctFlash 0.5s;
+}
+
+.wrong-effect{
+    animation:wrongFlash 0.5s;
+}
+
+@keyframes correctFlash{
+    0%{background:#00ff00;}
+    100%{background:transparent;}
+}
+
+@keyframes wrongFlash{
+    0%{background:#ff0000;}
+    100%{background:transparent;}
+}
+
+.gameover{
+    color:#ff4b5c;
+    font-size:32px;
+    margin-top:20px;
+    text-shadow:0 0 20px red;
+    animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.08);}
+    100%{transform:scale(1);}
+}
+
+.hidden{
+    display:none;
+}
+
+.footer{
+    margin-top:20px;
+    font-size:12px;
+    opacity:0.7;
+}
+
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+<div class="planet"></div>
+
+<script>
+
+for(let i=0;i<70;i++){
+
+    const p=document.createElement('div');
+
+    p.classList.add('particle');
+
+    p.style.left=Math.random()*100+'%';
+
+    p.style.animationDuration=(5+Math.random()*10)+'s';
+
+    p.style.opacity=Math.random();
+
+    p.style.width=p.style.height=(2+Math.random()*5)+'px';
+
+    document.body.appendChild(p);
+
+}
+
+</script>
+
+<div class="container">
+
+<div class="card">
+
+<h1 class="title">QUIZ PLANET</h1>
+
+<!-- MENU -->
+
+<div id="menu">
+
+<p class="subtitle">
+Jelajahi planet dan jawab soal SMA Kelas 10!
+</p>
+
+<button class="btn" onclick="startGame()">
+🚀 MULAI PETUALANGAN
+</button>
+
+<button class="btn" onclick="showSettings()">
+⚙️ PENGATURAN
+</button>
+
+<div class="footer">
+© 2026 Quiz Planet Adventure
+</div>
+
+</div>
+
+<!-- QUIZ -->
+
+<div id="quiz" class="hidden">
+
+<div class="level-info">
+🌍 LEVEL:
+<span id="levelName">BUMI</span>
+</div>
+
+<div class="timer-box">
+
+<div class="timer">
+⏳ WAKTU:
+<span id="timer">15</span>
+</div>
+
+</div>
+
+<div class="question" id="question">
+Pertanyaan
+</div>
+
+<div id="answers"></div>
+
+<div class="score">
+🏆 SKOR:
+<span id="score">0</span>
+</div>
+
+</div>
+
+<!-- SETTINGS -->
+
+<div id="settings" class="hidden">
+
+<h2>⚙️ Pengaturan</h2>
+
+<div class="settings-box">
+
+<div class="setting-item">
+Volume Musik
+<input type="range" min="0" max="1" step="0.1" value="1" id="volumeSlider">
+</div>
+
+<div class="setting-item">
+Mode Gelap
+<input type="checkbox" id="darkMode">
+</div>
+
+<div class="setting-item">
+Efek Partikel
+<input type="checkbox" checked id="particlesToggle">
+</div>
+
+<button class="btn" onclick="saveSettings()">
+💾 Simpan Pengaturan
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div> 
+  
+
+<!-- AUDIO GAME QUIZ PLANET -->
+
+<audio id="bgMusic" autoplay loop>
+<source src="https://files.catbox.moe/f9yzry.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="correctSound">
+<source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8631a878d.mp3?filename=correct-2-46134.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="wrongSound">
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8d4d1a8d1.mp3?filename=error-126627.mp3" type="audio/mpeg">
+  </audio>
+/* SOAL */
+
+const questions = [
+
+{
+q:"Apa ibu kota Indonesia?",
+a:["Jakarta","Bandung","Surabaya","Medan"],
+c:0
+},
+
+{
+q:"Planet terbesar di tata surya adalah?",
+a:["Mars","Jupiter","Venus","Saturnus"],
+c:1
+},
+
+{
+q:"Siapa presiden pertama Indonesia?",
+a:["Soeharto","Habibie","Soekarno","Jokowi"],
+c:2
+},
+
+{
+q:"Rumus luas lingkaran adalah?",
+a:["πr²","2πr","s²","p×l"],
+c:0
+}
+
+];
+
+/* TAMBAH SOAL JADI 50+ */
+
+for(let i=0;i<15;i++){
+
+questions.push(
+{
+q:"Berapa hasil "+(i+3)+" x "+(i+6)+" ?",
+a:[
+String((i+3)*(i+6)),
+String((i+4)*(i+6)),
+String((i+5)*(i+6)),
+String((i+2)*(i+6))
+],
+c:0
+}
+);
+
+questions.push(
+{
+q:"Apa simbol kimia air?",
+a:["CO2","H2O","NaCl","O2"],
+c:1
+}
+);
+
+questions.push(
+{
+q:"Planet merah adalah?",
+a:["Venus","Mars","Jupiter","Saturnus"],
+c:1
+}
+);
+
+questions.push(
+{
+q:"Benua terbesar di dunia adalah?",
+a:["Afrika","Asia","Eropa","Australia"],
+c:1
+}
+);
+
+}
+
+/* VARIABLE */
+
+let currentQuestion = 0;
+let score = 0;
+let timer = 15;
+let countdown;
+
+/* START GAME */
+
+function startGame(){
+
+document.getElementById('menu').classList.add('hidden');
+
+document.getElementById('settings').classList.add('hidden');
+
+document.getElementById('quiz').classList.remove('hidden');
+
+shuffleQuestions();
+
+currentQuestion = 0;
+
+score = 0;
+
+showQuestion();
+
+}
+
+/* RANDOM */
+
+function shuffleQuestions(){
+
+questions.sort(()=>Math.random()-0.5);
+
+}
+
+/* SHOW QUESTION */
+
+function showQuestion(){
+
+clearInterval(countdown);
+
+timer = 15;
+
+document.getElementById('timer').innerText = timer;
+
+countdown = setInterval(()=>{
+
+timer--;
+
+document.getElementById('timer').innerText = timer;
+
+if(timer <= 0){
+
+clearInterval(countdown);
+
+gameOver("⏰ WAKTU HABIS!");
+
+}
+
+},1000);
+
+const q = questions[currentQuestion];
+
+document.getElementById('question').innerText =
+(currentQuestion+1)+". "+q.q;
+
+const answersDiv = document.getElementById('answers');
+
+answersDiv.innerHTML='';
+
+q.a.forEach((answer,index)=>{
+
+const btn=document.createElement('button');
+
+btn.classList.add('answer-btn');
+
+btn.innerText=answer;
+
+btn.onclick=()=>checkAnswer(index);
+
+answersDiv.appendChild(btn);
+
+});
+
+changePlanet();
+
+}
+
+/* CHECK ANSWER */
+
+function checkAnswer(index){
+
+const q = questions[currentQuestion];
+
+if(index===q.c){
+
+document.body.classList.add('correct-effect');
+
+document.getElementById('correctSound').play();
+
+score += 10;
+
+document.getElementById('score').innerText = score;
+
+setTimeout(()=>{
+
+document.body.classList.remove('correct-effect');
+
+currentQuestion++;
+
+if(currentQuestion >= questions.length){
+
+alert("🎉 SELAMAT! Kamu Menyelesaikan Semua Soal!");
+
+location.reload();
+
+}else{
+
+showQuestion();
+
+}
+
+},500);
+
+}else{
+
+document.body.classList.add('wrong-effect');
+
+document.getElementById('wrongSound').play();
+
+setTimeout(()=>{
+
+document.body.classList.remove('wrong-effect');
+
+gameOver("❌ JAWABAN SALAH!");
+
+},500);
+
+}
+
+}
+
+/* GAME OVER */
+
+function gameOver(text){
+
+clearInterval(countdown);
+
+document.getElementById('quiz').innerHTML = `
+
+<div class="gameover">
+${text}
+</div>
+
+<div style="margin-top:20px;font-size:22px;">
+🏆 SKOR AKHIR: ${score}
+</div>
+
+<button class="btn" onclick="location.reload()">
+🔄 MAIN LAGI
+</button>
+
+`;
+
+}
+
+/* PLANET */
+
+function changePlanet(){
+
+const planet = document.querySelector('.planet');
+
+const levelName = document.getElementById('levelName');
+
+if(currentQuestion < 10){
+
+planet.style.background =
+"radial-gradient(circle at 30% 30%,#4facfe,#00f2fe,#001f4d)";
+
+planet.style.boxShadow =
+"0 0 60px cyan";
+
+levelName.innerText = "BUMI";
+
+}
+
+else if(currentQuestion < 20){
+
+planet.style.background =
+"radial-gradient(circle at 30% 30%,#ff9966,#ff5e62,#5b0000)";
+
+planet.style.boxShadow =
+"0 0 60px orange";
+
+levelName.innerText = "MARS";
+
+}
+
+else if(currentQuestion < 30){
+
+planet.style.background =
+"radial-gradient(circle at 30% 30%,#ffe259,#ffa751,#665000)";
+
+planet.style.boxShadow =
+"0 0 60px yellow";
+
+levelName.innerText = "VENUS";
+
+}
+
+else if(currentQuestion < 40){
+
+planet.style.background =
+"radial-gradient(circle at 30% 30%,#43cea2,#185a9d,#001133)";
+
+planet.style.boxShadow =
+"0 0 60px lightblue";
+
+levelName.innerText = "NEPTUNUS";
+
+}
+
+else{
+
+planet.style.background =
+"radial-gradient(circle at 30% 30%,#d38312,#a83279,#220022)";
+
+planet.style.boxShadow =
+"0 0 60px violet";
+
+levelName.innerText = "PLANET LEGEND";
+
+}
+
+}
+
+/* SETTINGS */
+
+function showSettings(){
+
+document.getElementById('menu').classList.add('hidden');
+
+document.getElementById('settings').classList.remove('hidden');
+
+}
+
+function saveSettings(){
+
+const volume =
+document.getElementById('volumeSlider').value;
+
+document.getElementById('bgMusic').volume = volume;
+
+const darkMode =
+document.getElementById('darkMode').checked;
+
+if(darkMode){
+
+document.body.style.background =
+"linear-gradient(135deg,#000,#050816,#111)";
+
+}else{
+
+document.body.style.background =
+"linear-gradient(135deg,#050816,#0b0f2a,#111c44)";
+}
+
+const particles =
+document.getElementById('particlesToggle').checked;
+
+document.querySelectorAll('.particle').forEach(p=>{
+
+p.style.display = particles ? 'block' : 'none';
+
+});
+
+alert("✅ Pengaturan Disimpan!");
+
+document.getElementById('settings').classList.add('hidden');
+
+document.getElementById('menu').classList.remove('hidden');
+
+}
+
+</script>
+
+</body>
+  </html>
